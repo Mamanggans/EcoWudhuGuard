@@ -67,20 +67,18 @@
 
         <article class="slide" data-index="5">
           <div class="code-layout"><div><p class="display-label">05 / KODE &amp; CATATAN</p><h3>Logika kecil,<br><span>dampak nyata.</span></h3><p>Sketsa Arduino lengkap dari dokumen teknis, dengan scroll internal agar setiap baris tetap dapat dibaca dalam frame presentasi.</p><div class="note-list"><div><b>Pin 2</b><span>interrupt sensor</span></div><div><b>Pin 5</b><span>servo keran</span></div><div><b>Pin 6</b><span>buzzer piezo</span></div><div><b>Pin 8–10</b><span>LED status</span></div></div></div><div class="code-wrap"><div class="code-toolbar"><span>monitor_debit_air_wudhu.ino · lengkap</span><button id="copyCodeButton" class="copy-button">⧉ Salin kode</button></div><pre class="code-card" id="fullCode"><code>5. Kode Program (.ino)
-Install library LiquidCrystal_I2C (oleh Frank de Brabander) lewat Library Manager pada Arduino IDE
-sebelum meng-upload kode berikut (Servo sudah bawaan Arduino IDE).
-/*
+        /*
   =========================================================
   ALAT MONITOR DEBIT AIR WUDHU
   =========================================================
   Fungsi:
   - Mengukur volume air (mL) yang keluar dari keran wudhu
   - Menampilkan status HEMAT / NORMAL / BOROS di LCD 20x4
-  - LED hijau = hemat              (senyap, tanpa bunyi, keran terbuka penuh)
-  - LED kuning = normal (batas wajar) -&gt; buzzer bunyi PENDEK sekali,
+  - LED hijau  = hemat            (senyap, tanpa bunyi, keran terbuka penuh)
+  - LED kuning = normal (batas wajar) -> buzzer bunyi PENDEK sekali,
                  servo otomatis menutup keran ~50% (air tetap mengalir,
                  hanya diperkecil, tidak mati total)
-  - LED merah = boros              -&gt; buzzer bunyi KERAS &amp; SERING (3x beep
+  - LED merah  = boros            -> buzzer bunyi KERAS & SERING (3x beep
                  bernada tinggi tiap detik), keran tetap di posisi ~50%
   - Total otomatis reset +-3 detik setelah air berhenti mengalir selama
     5 detik (dianggap satu sesi wudhu selesai), keran kembali terbuka
@@ -89,44 +87,53 @@ sebelum meng-upload kode berikut (Servo sudah bawaan Arduino IDE).
   PENTING soal LCD (modul I2C):
   - LCD 20x4 di sini disambung lewat modul konverter I2C (chip PCF8574)
     yang tertempel di LCD lewat pita kabel/header 16-pin. Dari modul I2C
-    itu hanya 4 kabel yang perlu ke Arduino: GND, VCC, SDA (-&gt;A4), SCL (-&gt;A5).
+    itu hanya 4 kabel yang perlu ke Arduino: GND, VCC, SDA (->A4), SCL (->A5).
   - Kalau backlight menyala tapi teks TIDAK muncul sama sekali: putar
     trimpot biru kecil yang ada DI ATAS modul I2C (bukan di LCD-nya)
     sampai karakter terlihat jelas — ini penyebab paling umum layar
     tampak kosong.
   - Kalau setelah diputar trimpot masih blank juga, alamat I2C mungkin
-    bukan 0x27. Jalankan sketsa &quot;I2C Scanner&quot; (File &gt; Examples &gt; Wire &gt;
+    bukan 0x27. Jalankan sketsa "I2C Scanner" (File > Examples > Wire >
     i2c_scanner) untuk memastikan alamatnya, lalu ganti di baris
     LiquidCrystal_I2C lcd(0x27, 20, 4) di bawah kalau perlu (alternatif
     umum lainnya: 0x3F).
 
-  Library yang dibutuhkan (install via Arduino IDE &gt; Library Manager):
+  Library yang dibutuhkan (install via Arduino IDE > Library Manager):
   - LiquidCrystal_I2C (oleh Frank de Brabander)
   - Servo (bawaan Arduino IDE, tidak perlu install manual)
 
   Wiring ringkas:
-  - Sensor flow : merah-&gt;5V, hitam-&gt;GND, kuning(sinyal)-&gt;pin 2
-  - LCD I2C       : VCC-&gt;5V, GND-&gt;GND, SDA-&gt;A4, SCL-&gt;A5
-  - LED hijau     : pin 8 -&gt; resistor 220ohm -&gt; GND
-  - LED kuning    : pin 9 -&gt; resistor 220ohm -&gt; GND
-  - LED merah     : pin 10 -&gt; resistor 220ohm -&gt; GND
-  - Buzzer piezo : pin 6 -&gt; GND (piezo pasif, dikendalikan lewat tone())
-  - Servo keran : sinyal-&gt;pin 5, VCC-&gt;5V (idealnya catu daya terpisah), GND-&gt;GND
-  - Tombol reset : pin 7 -&gt; GND (pakai INPUT_PULLUP)
+  - Sensor flow  : merah->5V, hitam->GND, kuning(sinyal)->pin 2
+  - LCD I2C      : VCC->5V, GND->GND, SDA->A4, SCL->A5
+  - LED hijau    : pin 8  -> resistor 220ohm -> GND
+  - LED kuning   : pin 9  -> resistor 220ohm -> GND
+  - LED merah    : pin 10 -> resistor 220ohm -> GND
+  - Buzzer piezo : pin 6  -> GND (piezo pasif, dikendalikan lewat tone())
+  - Servo keran  : sinyal->pin 5, VCC->5V (idealnya catu daya terpisah), GND->GND
+  - Tombol reset : pin 7 -> GND (pakai INPUT_PULLUP)
 
   PENTING soal servo:
   - Servo perlu dipasang mekanis (bracket/lengan) ke gagang keran agar bisa
     memutarnya. SG90 cukup untuk keran ringan; kalau gagang keran keras/kaku,
-    pakai servo bertorsi besar seperti MG995 + catu daya 5-6V terpisah
+    pakai servo bertorsi besar seperti MG995/MG996R + catu daya 5-6V terpisah
     (jangan ambil dari pin 5V Arduino, bisa membuat LCD/sensor tidak stabil).
   - SUDUT_SETENGAH di bawah ini adalah nilai contoh (45 derajat). Sesuaikan
     dengan hasil uji coba di keran Anda sampai bukaannya betul-betul ~50%.
+  - Servo memakai dua mode: saat AKTIF meregulasi air (status normal/boros)
+    servo tetap attach() dan MENAHAN posisi ~50% dengan tenaga penuh (perlu,
+    supaya tidak terdorong balik oleh tekanan air/pegas keran). Saat IDLE
+    (menunggu wudhu berikutnya, atau baru nyala) servo dibuka penuh lalu
+    di-detach() sehingga bisa diputar bebas pakai tangan — berguna waktu
+    memasang/mengarahkan bracket ke gagang keran.
+    Konsekuensinya: kalau servo digeser manual saat sedang bebas (idle),
+    posisi software tidak otomatis tahu itu berubah sampai ada perintah
+    baru yang beda dari posisi terakhir.
   =========================================================
 */
 
-#include &lt;Wire.h&gt;
-#include &lt;LiquidCrystal_I2C.h&gt;
-#include &lt;Servo.h&gt;
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <Servo.h>
 
 // Alamat I2C LCD umumnya 0x27, jika layar tetap blank setelah trimpot
 // diputar, coba ganti ke 0x3F (cek dulu pakai sketsa I2C Scanner)
@@ -134,21 +141,20 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 Servo servoKeran;
 
 // ===== KONFIGURASI PIN =====
-#define FLOW_SENSOR_PIN 2    // Harus pin interrupt (2 atau 3 di Arduino Uno)
-#define LED_HIJAU         8
-#define LED_KUNING        9
-#define LED_MERAH         10
-#define TOMBOL_RESET      7
-#define BUZZER_PIN        6
-#define SERVO_PIN         5
+#define FLOW_SENSOR_PIN 2   // Harus pin interrupt (2 atau 3 di Arduino Uno)
+#define LED_HIJAU        8
+#define LED_KUNING       9
+#define LED_MERAH        10
+#define TOMBOL_RESET     7
+#define BUZZER_PIN       6
+#define SERVO_PIN        5
+#define TOMBOL_TUTUP     3
 
 // ===== SUDUT SERVO KERAN (derajat) — kalibrasi sesuai keran Anda =====
-
-
-const int SUDUT_BUKA_PENUH = 0;     // posisi keran terbuka penuh
-const int SUDUT_SETENGAH   = 45;    // posisi keran tertutup ~50% (bukan angka baku,
-                                     // sesuaikan lewat uji coba langsung di keran)
-
+const int SUDUT_BUKA_PENUH = 0;    // posisi keran terbuka penuh
+const int SUDUT_SETENGAH   = 26;  
+const int SUDUT_TUTUP   = 90;  // posisi keran tertutup ~50% (bukan angka baku,
+        
 // ===== KALIBRASI SENSOR =====
 // Untuk sensor YF-S201: frekuensi(Hz) = 7.5 x debit(L/menit)
 // Jika hasil pembacaan tidak akurat, sesuaikan angka ini lewat kalibrasi manual
@@ -156,9 +162,11 @@ const int SUDUT_SETENGAH   = 45;    // posisi keran tertutup ~50% (bukan angka b
 float calibrationFactor = 7.5;
 
 // ===== BATAS KATEGORI (dalam mL) — silakan disesuaikan =====
-const unsigned long BATAS_HEMAT = 750;    // &lt; 750 mL          =&gt; hemat
-const unsigned long BATAS_NORMAL = 1500; // 750 - 1500 mL      =&gt; normal
-                                           // &gt; 1500 mL         =&gt; boros
+const unsigned long BATAS_HEMAT  = 800;   // < 750 mL         => hemat
+const unsigned long BATAS_NORMAL = 1500;  // 750 - 1500 mL    => normal
+                                                      // sesuaikan lewat uji coba langsung di keran)
+int sudutServoTerakhir = -1; // -1 = belum pernah diperintah, servo masih bebas
+                 // > 1500 mL        => boros
 
 // ===== VARIABEL SENSOR =====
 volatile unsigned long pulseCount = 0;
@@ -176,75 +184,78 @@ void pulseCounter() {
 void setup() {
   Serial.begin(9600);
 
-    lcd.init();
-    lcd.backlight();
+  lcd.init();
+  lcd.backlight();
 
-    pinMode(LED_HIJAU, OUTPUT);
-    pinMode(LED_KUNING, OUTPUT);
-    pinMode(LED_MERAH, OUTPUT);
-    pinMode(TOMBOL_RESET, INPUT_PULLUP);
-    pinMode(FLOW_SENSOR_PIN, INPUT_PULLUP);
-    pinMode(BUZZER_PIN, OUTPUT);
-    noTone(BUZZER_PIN);
+  pinMode(LED_HIJAU, OUTPUT);
+  pinMode(LED_KUNING, OUTPUT);
+  pinMode(LED_MERAH, OUTPUT);
+  pinMode(TOMBOL_RESET, INPUT_PULLUP);
+  pinMode(FLOW_SENSOR_PIN, INPUT_PULLUP);
+  pinMode(BUZZER_PIN, OUTPUT);
+  noTone(BUZZER_PIN);
+  pinMode(TOMBOL_TUTUP, INPUT_PULLUP);
 
-    servoKeran.attach(SERVO_PIN);
-    servoKeran.write(SUDUT_BUKA_PENUH); // pastikan keran terbuka penuh saat baru nyala
+  bebaskanServoSaatIdle(); // buka penuh, lalu detach (servo bebas diputar tangan saat idle)
 
-    attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
+  attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
 
-    tampilkanSiap();
-    oldTime = millis();
+  tampilkanSiap();
+  oldTime = millis();
 }
 
 void loop() {
   // Cek tombol reset manual
+  if (digitalRead(TOMBOL_TUTUP) == LOW) {
+  tutupKeranPenuh();
+    delay(300); // debounce sederhana
+  }
   if (digitalRead(TOMBOL_RESET) == LOW) {
     resetSesi();
     delay(300); // debounce sederhana
   }
+  // Hitung debit setiap 1 detik
+  if (millis() - oldTime >= 1000) {
+    detachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN));
 
-    // Hitung debit setiap 1 detik
-    if (millis() - oldTime &gt;= 1000) {
-      detachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN));
+    unsigned long pulses = pulseCount;
+    pulseCount = 0;
 
-     unsigned long pulses = pulseCount;
-     pulseCount = 0;
+    float deltaDetik = (millis() - oldTime) / 1000.0;
+    oldTime = millis();
 
-     float deltaDetik = (millis() - oldTime) / 1000.0;
-     oldTime = millis();
+    float flowRateLpm = (pulses / deltaDetik) / calibrationFactor;   // Liter/menit
+    float mlIntervalIni = (flowRateLpm / 60.0) * 1000.0 * deltaDetik; // mL pada interval ini
 
-     float flowRateLpm = (pulses / deltaDetik) / calibrationFactor;   // Liter/menit
-     float mlIntervalIni = (flowRateLpm / 60.0) * 1000.0 * deltaDetik; // mL pada interval ini
-
-     if (pulses &gt; 0) {
-       totalMilliLitres += (unsigned long) mlIntervalIni;
-       lastPulseTime = millis();
-       sedangMengalir = true;
-       tampilkanStatus();
-     } else if (sedangMengalir &amp;&amp; (millis() - lastPulseTime &gt; IDLE_TIMEOUT)) {
-       // Air sudah berhenti mengalir cukup lama -&gt; sesi wudhu dianggap selesai
-       delay(3000); // biarkan hasil akhir terbaca dulu
-       resetSesi();
-     }
-
-
-
-
-        attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
+    if (pulses > 0) {
+      totalMilliLitres += (unsigned long) mlIntervalIni;
+      lastPulseTime = millis();
+      sedangMengalir = true;
+      Serial.print("[DEBIT] Total saat ini: ");
+      Serial.print(totalMilliLitres);
+      Serial.println(" mL");
+      tampilkanStatus();
+    } else if (sedangMengalir && (millis() - lastPulseTime > IDLE_TIMEOUT)) {
+      // Air sudah berhenti mengalir cukup lama -> sesi wudhu dianggap selesai
+      delay(3000); // biarkan hasil akhir terbaca dulu
+      resetSesi();
     }
+
+    attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
+  }
 }
 
 void tampilkanSiap() {
   lcd.clear();
   matikanSemuaLED();
   noTone(BUZZER_PIN);
-  servoKeran.write(SUDUT_BUKA_PENUH);
+  bebaskanServoSaatIdle();
   lcd.setCursor(0, 0);
-  lcd.print(&quot;Monitor Air Wudhu&quot;);
+  lcd.print("Monitor Air Wudhu");
   lcd.setCursor(0, 1);
-  lcd.print(&quot;Silakan mulai&quot;);
+  lcd.print("Silakan mulai");
   lcd.setCursor(0, 2);
-  lcd.print(&quot;berwudhu...&quot;);
+  lcd.print("berwudhu...");
 }
 
 void tampilkanStatus() {
@@ -252,48 +263,50 @@ void tampilkanStatus() {
   matikanSemuaLED();
   noTone(BUZZER_PIN);
 
-    if (totalMilliLitres &lt; BATAS_HEMAT) {
-      // ===== HEMAT (LED HIJAU, tanpa bunyi, keran tetap terbuka penuh) =====
-      lcd.setCursor(0, 0);
-      lcd.print(&quot;Terima kasih telah&quot;);
-      lcd.setCursor(0, 1);
-      lcd.print(&quot;menghemat air saat&quot;);
-      lcd.setCursor(0, 2);
-      lcd.print(&quot;berwudhu.&quot;);
-      digitalWrite(LED_HIJAU, HIGH);
-      servoKeran.write(SUDUT_BUKA_PENUH);
+  if (totalMilliLitres < BATAS_HEMAT) {
+    // ===== HEMAT (LED HIJAU, tanpa bunyi, keran tetap terbuka penuh) =====
+    lcd.setCursor(0, 0);
+    lcd.print("Terima kasih telah");
+    lcd.setCursor(0, 1);
+    lcd.print("menghemat air saat");
+    lcd.setCursor(0, 2);
+    lcd.print("berwudhu.");
+    digitalWrite(LED_HIJAU, HIGH);
+    
 
-    } else if (totalMilliLitres &lt; BATAS_NORMAL) {
-      // ===== NORMAL / BATAS WAJAR (LED KUNING + beep pendek + keran ditutup ~50%) =====
-      lcd.setCursor(0, 0);
-      lcd.print(&quot;Air saat berwudhu&quot;);
-      lcd.setCursor(0, 1);
-      lcd.print(&quot;normal (batas&quot;);
-      lcd.setCursor(0, 2);
-      lcd.print(&quot;wajar)&quot;);
-      digitalWrite(LED_KUNING, HIGH);
-      bunyikanNormal();
-      servoKeran.write(SUDUT_SETENGAH); // otomatis perkecil aliran, air tidak mati
+  } else if (totalMilliLitres < BATAS_NORMAL) {
+    // ===== NORMAL / BATAS WAJAR (LED KUNING + beep pendek + keran ditutup ~50%) =====
+    lcd.setCursor(0, 0);
+    lcd.print("Air saat berwudhu");
+    lcd.setCursor(0, 1);
+    lcd.print("normal (batas");
+    lcd.setCursor(0, 2);
+    lcd.print("wajar)");
+    digitalWrite(LED_KUNING, HIGH);
+    bunyikanNormal();
+    gerakkanServo(SUDUT_SETENGAH); // otomatis perkecil aliran, air tidak mati
+    servoKeran.detach();
 
-    } else {
-      // ===== BOROS (LED MERAH + beep keras &amp; berulang) =====
-      // Keran dibiarkan tetap di posisi ~50% (sudah ditutup sejak status normal);
-      // peringatan tambahan cukup lewat LED merah + buzzer, bukan menutup lebih jauh
-      lcd.setCursor(0, 0);
-      lcd.print(&quot;Anda telah&quot;);
-      lcd.setCursor(0, 1);
-      lcd.print(&quot;melakukan pemborosan&quot;);
-      lcd.setCursor(0, 2);
-      lcd.print(&quot;saat berwudhu&quot;);
-      digitalWrite(LED_MERAH, HIGH);
-      bunyikanBoros();
-      servoKeran.write(SUDUT_SETENGAH);
-    }
+  } else {
+    // ===== BOROS (LED MERAH + beep keras & berulang) =====
+    // Keran dibiarkan tetap di posisi ~50% (sudah ditutup sejak status normal);
+    // peringatan tambahan cukup lewat LED merah + buzzer, bukan menutup lebih jauh
+    lcd.setCursor(0, 0);
+    lcd.print("Anda telah");
+    lcd.setCursor(0, 1);
+    lcd.print("melakukan pemborosan");
+    lcd.setCursor(0, 2);
+    lcd.print("saat berwudhu");
+    digitalWrite(LED_MERAH, HIGH);
+    bunyikanBoros();
+    
+    servoKeran.detach();
+  }
 
-    lcd.setCursor(0, 3);
-    lcd.print(&quot;Total: &quot;);
-    lcd.print(totalMilliLitres);
-    lcd.print(&quot; mL&quot;);
+  lcd.setCursor(0, 3);
+  lcd.print("Total: ");
+  lcd.print(totalMilliLitres);
+  lcd.print(" mL");
 }
 
 void resetSesi() {
@@ -301,29 +314,67 @@ void resetSesi() {
   pulseCount = 0;
   sedangMengalir = false;
   noTone(BUZZER_PIN);
-  servoKeran.write(SUDUT_BUKA_PENUH); // buka penuh lagi untuk pemakai berikutnya
-  tampilkanSiap();
+  tampilkanSiap(); // ini juga akan membuka penuh & melepas (detach) servo
 }
 
-// Beep pendek &amp; lembut sekali tiap status &quot;normal&quot; diperbarui (non-blocking,
+// Beep pendek & lembut sekali tiap status "normal" diperbarui (non-blocking,
 // tone() dengan parameter durasi otomatis berhenti sendiri di belakang layar)
 void bunyikanNormal() {
   tone(BUZZER_PIN, 1200, 150);
 }
 
-
-
-
 // Beep keras (nada lebih tinggi, dekat titik resonansi piezo sehingga
-// terdengar lebih nyaring) dan berulang 3x tiap status &quot;boros&quot; diperbarui
+// terdengar lebih nyaring) dan berulang 3x tiap status "boros" diperbarui
 void bunyikanBoros() {
-  for (int i = 0; i &lt; 3; i++) {
+  for (int i = 0; i < 3; i++) {
     tone(BUZZER_PIN, 2500);
     delay(90);
     noTone(BUZZER_PIN);
     delay(70);
   }
-}</code></pre><span class="copy-feedback" id="copyFeedback" role="status"></span></div></div>
+}
+
+// Menggerakkan servo ke sudut target dan TETAP menahan posisi itu (attach
+// aktif) selama servo sedang dipakai meregulasi air (status normal/boros).
+// Kalau sudah di posisi yang sama, tidak melakukan apa-apa (hindari kedutan).
+void gerakkanServo(int sudutTarget) {
+  if (sudutTarget == sudutServoTerakhir) return;
+  Serial.print("[SERVO] Bergerak ke sudut: ");
+  Serial.println(sudutTarget);
+  servoKeran.attach(SERVO_PIN);
+  servoKeran.write(sudutTarget);
+  delay(400); // beri waktu servo mencapai posisi; perbesar kalau servo besar/berat
+  sudutServoTerakhir = sudutTarget;
+  // Sengaja TIDAK detach di sini -> servo tetap menahan posisi selama aktif
+  // meregulasi air (butuh tenaga untuk melawan tekanan air/pegas keran).
+}
+
+// Dipakai HANYA saat idle (menunggu wudhu berikutnya / baru nyala): pastikan
+// keran terbuka penuh, lalu baru dilepas (detach) supaya servo bisa diputar
+// bebas pakai tangan untuk pasang/kalibrasi bracket ke gagang keran.
+void bebaskanServoSaatIdle() {
+  
+  gerakkanServo(SUDUT_TUTUP);
+  servoKeran.detach();
+}
+// Menutup keran penuh (90 derajat) saat tombol ditekan.
+// Dibuat langsung (tidak lewat gerakkanServo) supaya servo pasti bergerak,
+// walaupun posisi terakhir yang tercatat sudah sama dengan SUDUT_TUTUP.
+void tutupKeranPenuh() {
+  Serial.println("[SERVO] Tombol tutup ditekan -> keran ditutup penuh");
+  servoKeran.attach(SERVO_PIN);
+  servoKeran.write(SUDUT_TUTUP);   // 90 derajat
+  delay(400);
+  sudutServoTerakhir = SUDUT_TUTUP;
+  // Servo tetap attach supaya menahan keran tertutup rapat
+}
+void matikanSemuaLED() {
+  digitalWrite(LED_HIJAU, LOW);
+  digitalWrite(LED_KUNING, LOW);
+  digitalWrite(LED_MERAH, LOW);
+}
+
+          </code></pre><span class="copy-feedback" id="copyFeedback" role="status"></span></div></div>
         </article>
 
         <article class="slide" data-index="6">
